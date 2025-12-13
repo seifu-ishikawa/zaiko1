@@ -1,23 +1,19 @@
 name: CI
-
 on:
   pull_request:
   push:
     branches: [ main ]
-
 jobs:
   scan_ruby:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
+          ruby-version: file
           bundler-cache: true
-
       - name: Scan for common Rails security vulnerabilities using static analysis
         run: bin/brakeman --no-pager
       
@@ -26,19 +22,16 @@ jobs:
       
   scan_js:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
+          ruby-version: file
           bundler-cache: true
-
       - name: Scan for security vulnerabilities in JavaScript dependencies
         run: bin/importmap audit
-
   lint:
     runs-on: ubuntu-latest
     env:
@@ -46,12 +39,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
+          ruby-version: file
           bundler-cache: true
-
       - name: Prepare RuboCop cache
         uses: actions/cache@v5
         env:
@@ -61,13 +53,10 @@ jobs:
           key: rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-${{ github.ref_name == github.event.repository.default_branch && github.run_id || 'default' }}
           restore-keys: |
             rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-
-
       - name: Lint code for consistent style
         run: bin/rubocop -f github
-
   test:
     runs-on: ubuntu-latest
-
     # services:
     #  redis:
     #    image: valkey/valkey:8
@@ -77,22 +66,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
+          ruby-version: file
           bundler-cache: true
-
       - name: Run tests
         env:
           RAILS_ENV: test
           # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           # REDIS_URL: redis://localhost:6379/0
         run: bin/rails db:test:prepare test
-
   system-test:
     runs-on: ubuntu-latest
-
     # services:
     #  redis:
     #    image: valkey/valkey:8
@@ -102,19 +88,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
+          ruby-version: file
           bundler-cache: true
-
       - name: Run System Tests
         env:
           RAILS_ENV: test
           # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           # REDIS_URL: redis://localhost:6379/0
         run: bin/rails db:test:prepare test:system
-
       - name: Keep screenshots from failed system tests
         uses: actions/upload-artifact@v6
         if: failure()
